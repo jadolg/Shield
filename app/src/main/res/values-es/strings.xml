@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">The Blue Elephant\'s Shield</string>
+    <string name="action_settings">Configuración</string>
+    <string name="error_creating_file">Error creando archivo de cadenas</string>
+    <string name="error_reading_file">Error leyendo archivo de cadenas</string>
+    <string name="cant_get_root">No se puede obtener permisos de root</string>
+    <string name="ON">Encendido</string>
+    <string name="OFF">Apagado</string>
+    <string name="edit_strings">Editar cadenas</string>
+</resources>

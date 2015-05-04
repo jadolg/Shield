@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">The Blue Elephant\'s Shield</string>
+    <string name="action_settings">Settings</string>
+    <string name="error_creating_file">Error creating strings file</string>
+    <string name="error_reading_file">Error reading strings file</string>
+    <string name="cant_get_root">Can\'t get root access</string>
+    <string name="ON">ON</string>
+    <string name="OFF">OFF</string>
+    <string name="edit_strings">Edit strings</string>
+
+</resources>
