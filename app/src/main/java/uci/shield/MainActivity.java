@@ -21,13 +21,19 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 
 public class MainActivity extends ActionBarActivity {
 
-    private TextView textOutput;
+//    private TextView textOutput;
     ToggleButton button;
+    ToggleButton button2;
+    ToggleButton button3;
     private String default_addrs = "addons.mozilla.\n" +
             "fbstatic\n" +
             "cdn.\n" +
@@ -35,20 +41,30 @@ public class MainActivity extends ActionBarActivity {
             "fsdn.";
 
     private ArrayList<String> addrs;
+    ArrayList<String> nauta_rules = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textOutput = (TextView) findViewById(R.id.editText);
+//        textOutput = (TextView) findViewById(R.id.editText);
         button = (ToggleButton) findViewById(R.id.toggleButton);
+        button2 = (ToggleButton) findViewById(R.id.toggleButton2);
+        button3 = (ToggleButton) findViewById(R.id.toggleButton3);
         createFile();
         readFile();
-        if (isOn()) {
-            button.setChecked(true);
-        } else {
-            button.setChecked(false);
-        }
+
+        nauta_rules.add("ACCEPT     tcp  --  0.0.0.0/0            200.55.128.3         tcp dpt:53");
+        nauta_rules.add("ACCEPT     udp  --  0.0.0.0/0            200.55.128.3         udp dpt:53");
+        nauta_rules.add("ACCEPT     tcp  --  0.0.0.0/0            190.6.81.0/24        tcp dpt:25");
+        nauta_rules.add("ACCEPT     tcp  --  0.0.0.0/0            190.6.81.0/24        tcp dpt:110");
+        nauta_rules.add("ACCEPT     tcp  --  0.0.0.0/0            190.6.81.0/24        tcp dpt:143");
+        nauta_rules.add("ACCEPT     tcp  --  0.0.0.0/0            190.6.81.0/24        tcp dpt:80");
+        nauta_rules.add("ACCEPT     tcp  --  0.0.0.0/0            190.6.81.0/24        tcp dpt:443");
+        nauta_rules.add("REJECT     tcp  --  0.0.0.0/0            0.0.0.0/0            reject-with tcp-reset");
+        nauta_rules.add("REJECT     udp  --  0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable");
+
+        confButtons();
     }
 
     @Override
@@ -57,10 +73,26 @@ public class MainActivity extends ActionBarActivity {
         //if closed by the system
         super.onResume();
         readFile();
+        confButtons();
+    }
+
+    private void confButtons(){
         if (isOn()) {
             button.setChecked(true);
         } else {
             button.setChecked(false);
+        }
+
+        if (isNautaOn()){
+            button2.setChecked(true);
+        } else {
+            button2.setChecked(false);
+        }
+
+        if (isDatablockON()){
+            button3.setChecked(true);
+        } else {
+            button3.setChecked(false);
         }
     }
 
@@ -81,7 +113,7 @@ public class MainActivity extends ActionBarActivity {
                 text.append('\n');
             }
             br.close();
-            this.textOutput.setText(text);
+//            this.textOutput.setText(text);
         } catch (IOException e) {
             Toast.makeText(getApplicationContext(), getString(R.string.error_reading_file),
                     Toast.LENGTH_SHORT).show();
@@ -136,6 +168,34 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void getIfs(){
+        try {
+            Log.w("getting interfaces","here");
+            for (Enumeration<NetworkInterface> en =
+                         NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
+            {
+                NetworkInterface intf = en.nextElement();
+                // Iterate over all IP addresses in each network interface.
+                for (Enumeration<InetAddress> enumIPAddr =
+                             intf.getInetAddresses(); enumIPAddr.hasMoreElements();)
+                {
+                    InetAddress iNetAddress = enumIPAddr.nextElement();
+                    // Loop back address (127.0.0.1) doesn't count as an in-use
+                    // IP address.
+                    if (!iNetAddress.isLoopbackAddress())
+                    {
+
+//                        this.textOutput.append(intf.getName()+"\n");
+    //                    sLocalIP = iNetAddress.getHostAddress().toString();
+    //                    sInterfaceName = intf.getName();
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sudo(ArrayList<String> strings) {
@@ -201,7 +261,74 @@ public class MainActivity extends ActionBarActivity {
         return true;
     }
 
+    private boolean isNautaOn() {
+        String iptables = suexec("iptables -nL");
+        for (String string : nauta_rules) {
+            if (!iptables.contains(string)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isDatablockON(){
+        String iptables = suexec("iptables -L OUTPUT");
+        String string = "REJECT     all  --  anywhere             anywhere             reject-with icmp-port-unreachable";
+        if (iptables.contains(string)){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void dataProt(){
+        ArrayList<String> a = new ArrayList<>();
+//        a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 200.55.128.3 -p tcp -m tcp --dport 53 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 200.55.128.3 -p udp -m udp --dport 53 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 25 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 110 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 143 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 80 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 443 -j ACCEPT");
+        a.add("iptables -A OUTPUT -o rmnet0 -p tcp -j REJECT --reject-with tcp-reset");
+        a.add("iptables -A OUTPUT -o rmnet0 -p udp -j REJECT");
+        sudo(a);
+    }
+
+    private void dataUnprot(){
+        ArrayList<String> a = new ArrayList<>();
+//        a.add("iptables -D OUTPUT -o rmnet0 -j REJECT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 200.55.128.3 -p tcp -m tcp --dport 53 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 200.55.128.3 -p udp -m udp --dport 53 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 25 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 110 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 143 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 80 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -d 190.6.81.0/24 -p tcp --dport 443 -j ACCEPT");
+        a.add("iptables -D OUTPUT -o rmnet0 -p tcp -j REJECT --reject-with tcp-reset");
+        a.add("iptables -D OUTPUT -o rmnet0 -p udp -j REJECT");
+        sudo(a);
+    }
+
+    private void blockData(){
+        dataUnprot();
+        button2.setChecked(false);
+        ArrayList<String> a = new ArrayList<>();
+        a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
+        sudo(a);
+    }
+
+    private void unBlockData(){
+        dataProt();
+        button2.setChecked(true);
+        ArrayList<String> a = new ArrayList<>();
+        a.add("iptables -D OUTPUT -o rmnet0 -j REJECT");
+        sudo(a);
+    }
+
     public void clicked(View view) {
+        getIfs();
         ArrayList<String> a = new ArrayList<>();
         String iptables = suexec("iptables -nL");
         if (button.isChecked()) {
@@ -216,8 +343,29 @@ public class MainActivity extends ActionBarActivity {
             }
         }
         sudo(a);
-
+        confButtons();
 //        Log.w("iptables -nL", suexec("iptables -nL"));
 
     }
+
+    public void clickedBlock(View view) {
+        if (button3.isChecked()){
+            blockData();
+        } else {
+            unBlockData();
+        }
+        confButtons();
+    }
+
+    public void clickedNauta(View view) {
+        if (button2.isChecked()) {
+            Log.w("setting nauta","");
+            dataProt();
+        } else {
+            dataUnprot();
+            Log.w("unsetting nauta","");
+         }
+        confButtons();
+       }
+
 }
