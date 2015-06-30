@@ -12,4 +12,8 @@
     <string name="BON">Bloqueo de Datos Encendido</string>
     <string name="BOFF">Bloqueo de Datos Apagado</string>
     <string name="edit_strings">Editar cadenas</string>
+    <string name="title_activity_aplicaciones">Aplicaciones</string>
+    <string name="nautaapps">Aplicaciones con acceso a nauta</string>
+    <string name="saveS">Guardar</string>
+
 </resources>
