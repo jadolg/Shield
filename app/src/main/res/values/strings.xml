@@ -10,6 +10,8 @@
     <string name="SOFF">Internet Shield OFF</string>
     <string name="NON">Nauta Shield ON</string>
     <string name="NOFF">Nauta Shield OFF</string>
+    <string name="NNDNSON">Nauta Shield (no DNS) ON</string>
+    <string name="NNDNSOFF">Nauta Shield (no DNS) OFF</string>
     <string name="BON">Blocking Data Connection ON</string>
     <string name="BOFF">Blocking Data Connection OFF</string>
     <string name="edit_strings">Edit strings</string>

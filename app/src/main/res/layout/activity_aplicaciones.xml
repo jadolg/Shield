@@ -4,22 +4,35 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context="uci.shield.Aplicaciones">
+    <EditText
+        android:id="@+id/search_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
 
+    <ListView
+        android:layout_below="@id/search_text"
+        android:id="@+id/apps_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:choiceMode="singleChoice"
+        android:divider="@android:drawable/divider_horizontal_dim_dark" android:dividerHeight="1dp"
+        android:background="@android:color/transparent"
+        android:listSelector="@android:color/transparent"
+        android:scrollbarStyle="outsideInset"
 
-        <ScrollView
+        ></ListView>
 
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/scrollView" >
-            <LinearLayout
-                android:id="@+id/layout"
-                android:orientation="vertical"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true">
-            </LinearLayout>
-        </ScrollView>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButton"
+        android:layout_above="@+id/apps_placeholder"
+        android:layout_alignEnd="@id/search_text"
+        android:layout_alignRight="@id/search_text"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/view"
+        android:background="@android:color/transparent"/>
+
 
 </RelativeLayout>

@@ -9,6 +9,8 @@
     <string name="SOFF">Escudo de Internet Apagado</string>
     <string name="NON">Escudo de Nauta Encendido</string>
     <string name="NOFF">Escudo de Nauta Apagado</string>
+    <string name="NNDNSON">Escudo de Nauta (sin DNS) Encendido</string>
+    <string name="NNDNSOFF">Escudo de Nauta (sin DNS) Apagado</string>
     <string name="BON">Bloqueo de Datos Encendido</string>
     <string name="BOFF">Bloqueo de Datos Apagado</string>
     <string name="edit_strings">Editar cadenas</string>

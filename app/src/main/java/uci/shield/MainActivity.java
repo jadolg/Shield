@@ -1,8 +1,6 @@
 package uci.shield;
 
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -11,7 +9,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -25,11 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -38,6 +31,7 @@ public class MainActivity extends ActionBarActivity {
     ToggleButton button;
     ToggleButton button2;
     ToggleButton button3;
+    ToggleButton button4;
     private String default_addrs = "addons.mozilla.\n" +
             "fbstatic\n" +
             "cdn.\n" +
@@ -54,6 +48,7 @@ public class MainActivity extends ActionBarActivity {
         button = (ToggleButton) findViewById(R.id.toggleButton);
         button2 = (ToggleButton) findViewById(R.id.toggleButton2);
         button3 = (ToggleButton) findViewById(R.id.toggleButton3);
+        button4 = (ToggleButton) findViewById(R.id.toggleButton4);
         createFile();
         readFile();
 
@@ -70,7 +65,7 @@ public class MainActivity extends ActionBarActivity {
         confButtons();
     }
 
-    private void getDomainS(){
+    private ArrayList<String> getDomainS(){
         Class<?> SystemProperties = null;
         try {
             SystemProperties = Class.forName("android.os.SystemProperties");
@@ -82,12 +77,14 @@ public class MainActivity extends ActionBarActivity {
         try {
             method = SystemProperties.getMethod("get", new Class[] { String.class });
             ArrayList<String> servers = new ArrayList<String>();
-            for (String name : new String[] { "net.dns1", "net.dns2", "net.dns3", "net.dns4", }) {
+//            for (String name : new String[] { "net.dns1", "net.dns2", "net.dns3", "net.dns4", }) {
+            for (String name : new String[] { "net.dns1", "net.dns2", }) {
                 String value = (String) method.invoke(null, name);
                 if (value != null && !"".equals(value) && !servers.contains(value)){
                     Log.e("DNS",value);
                     servers.add(value);}
             }
+            return servers;
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -95,6 +92,7 @@ public class MainActivity extends ActionBarActivity {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+        return new ArrayList<>();
     }
 
     private void loadCheckedApps(){
@@ -135,6 +133,13 @@ public class MainActivity extends ActionBarActivity {
         } else {
             button3.setChecked(false);
         }
+
+        if (isNautaNDNSOn()){
+            button4.setChecked(true);
+        } else {
+            button4.setChecked(false);
+        }
+
     }
 
 
@@ -222,8 +227,13 @@ public class MainActivity extends ActionBarActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 239){
             if (isNautaOn()){
-                dataUnprot();
-                dataProt();
+                nautaUnprot();
+                nautaProt();
+            }
+
+            if (isNautaNDNSOn()){
+                nautaUnprotNDNS();
+                nautaProtNDNS();
             }
         }
     }
@@ -299,6 +309,14 @@ public class MainActivity extends ActionBarActivity {
         else return false;
     }
 
+    private boolean isNautaNDNSOn() {
+        String iptables = suexec("iptables -S");
+        if (iptables.contains("-N NDNSNAUTA")){
+            return true;
+        }
+        else return false;
+    }
+
     private boolean isDatablockON(){
         String iptables = suexec("iptables -L OUTPUT");
         String string = "REJECT     all  --  anywhere             anywhere             reject-with icmp-port-unreachable";
@@ -309,24 +327,25 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private void dataProt(){
+    private void nautaProt(){
         loadCheckedApps();
         ArrayList<String> a = new ArrayList<>();
 //        a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
         a.add("iptables -N NAUTA");
         for (String app : checkedApps) {
-            String tapp = app.substring(0, app.indexOf(":"));
+//            String tapp = app.substring(0, app.indexOf(":"));
 //            Log.e("ch", app.substring(0, app.indexOf(":")));
 
-            a.add("iptables -A NAUTA -o rmnet0 -d 200.55.128.4 -p tcp -m tcp --dport 53 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 200.55.128.4 -p udp -m udp --dport 53 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 190.6.81.243 -p tcp -m tcp --dport 53 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 190.6.81.243 -p udp -m udp --dport 53 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 25 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 110 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 143 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 80 -m owner --uid-owner "+tapp+" -j ACCEPT");
-            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 443 -m owner --uid-owner "+tapp+" -j ACCEPT");
+            for (String dnsServer : getDomainS()) {
+                a.add("iptables -A NAUTA -o rmnet0 -d "+dnsServer+" -p tcp -m tcp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
+                a.add("iptables -A NAUTA -o rmnet0 -d "+dnsServer+" -p udp -m udp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
+            }
+
+            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 25 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 110 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 143 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 80 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 443 -m owner --uid-owner "+app+" -j ACCEPT");
         }
 
         a.add("iptables -A NAUTA -o rmnet0 -p tcp -j REJECT --reject-with tcp-reset");
@@ -336,7 +355,7 @@ public class MainActivity extends ActionBarActivity {
         sudo(a);
     }
 
-    private void dataUnprot(){
+    private void nautaUnprot(){
         ArrayList<String> a = new ArrayList<>();
         a.add("iptables -D OUTPUT -j NAUTA");
         a.add("iptables -F NAUTA");
@@ -344,16 +363,53 @@ public class MainActivity extends ActionBarActivity {
         sudo(a);
     }
 
+    private void nautaProtNDNS(){
+        loadCheckedApps();
+        ArrayList<String> a = new ArrayList<>();
+//        a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
+        a.add("iptables -N NDNSNAUTA");
+        for (String app : checkedApps) {
+//            String tapp = app.substring(0, app.indexOf(":"));
+//            Log.e("ch", app.substring(0, app.indexOf(":")));
+
+            a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 25 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 110 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 143 -m owner --uid-owner "+app+" -j ACCEPT");
+//            a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 80 -m owner --uid-owner "+tapp+" -j ACCEPT");
+//            a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 443 -m owner --uid-owner "+tapp+" -j ACCEPT");
+        }
+
+        a.add("iptables -A NDNSNAUTA -o rmnet0 -p tcp -j REJECT --reject-with tcp-reset");
+        a.add("iptables -A NDNSNAUTA -o rmnet0 -p udp -j REJECT");
+        a.add("iptables -A OUTPUT -j NDNSNAUTA");
+
+        sudo(a);
+    }
+
+    private void nautaUnprotNDNS(){
+        ArrayList<String> a = new ArrayList<>();
+        a.add("iptables -D OUTPUT -j NDNSNAUTA");
+        a.add("iptables -F NDNSNAUTA");
+        a.add("iptables -X NDNSNAUTA");
+        sudo(a);
+    }
+
     private void blockData(){
-        dataUnprot();
+        if (isNautaNDNSOn()){
+            nautaUnprotNDNS();
+        }
+        if (isNautaOn()){
+            nautaUnprot();
+        }
+
         button2.setChecked(false);
         ArrayList<String> a = new ArrayList<>();
         a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
         sudo(a);
+        //x
     }
 
     private void unBlockData(){
-        dataProt();
         button2.setChecked(true);
         ArrayList<String> a = new ArrayList<>();
         a.add("iptables -D OUTPUT -o rmnet0 -j REJECT");
@@ -392,12 +448,36 @@ public class MainActivity extends ActionBarActivity {
     public void clickedNauta(View view) {
         if (button2.isChecked()) {
             Log.w("setting nauta","");
-            dataProt();
+            if (isNautaNDNSOn()){
+                nautaUnprotNDNS();
+            }
+
+            if (isDatablockON()){
+                unBlockData();
+            }
+            nautaProt();
         } else {
-            dataUnprot();
+            nautaUnprot();
             Log.w("unsetting nauta","");
          }
         confButtons();
        }
+
+    public void clickedNautaNDNS(View view) {
+        if (button4.isChecked()) {
+            Log.w("setting nauta","");
+            if (isNautaOn()){
+                nautaUnprot();
+            }
+            if (isDatablockON()){
+                unBlockData();
+            }
+            nautaProtNDNS();
+        } else {
+            nautaUnprotNDNS();
+            Log.w("unsetting nauta","");
+        }
+        confButtons();
+    }
 
 }

@@ -10,16 +10,16 @@
         android:layout_height="wrap_content"
         android:text="New ToggleButton"
         android:id="@+id/toggleButton"
-        android:layout_alignParentStart="true"
         android:clickable="true"
         android:onClick="clicked"
         android:enabled="true"
         android:textOff="@string/SOFF"
         android:textOn="@string/SON"
-        android:layout_below="@+id/toggleButton2"
+        android:layout_below="@+id/toggleButton4"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/toggleButton4"
+        android:layout_alignEnd="@+id/toggleButton4" />
 
     <ToggleButton
         android:layout_width="wrap_content"
@@ -57,6 +57,21 @@
         android:background="@drawable/ic_launcher"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New ToggleButton"
+        android:id="@+id/toggleButton4"
+        android:layout_below="@+id/toggleButton2"
+        android:layout_alignRight="@+id/toggleButton2"
+        android:layout_alignEnd="@+id/toggleButton2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:focusable="false"
+        android:onClick="clickedNautaNDNS"
+        android:textOff="@string/NNDNSOFF"
+        android:textOn="@string/NNDNSON" />
 
 
 </RelativeLayout>
