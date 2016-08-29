@@ -103,15 +103,25 @@ public class Aplicaciones extends ActionBarActivity implements AdapterView.OnIte
         ArrayList<ApplicationInfo> installedapps = (ArrayList<ApplicationInfo>) pm.getInstalledApplications(0);
         ArrayList<Aplicacion> result = new ArrayList<>();
 
-
-
         for (ApplicationInfo i : installedapps) {
             boolean checked = false;
 
             if (checkedApps.contains(String.valueOf(i.uid))){
                 checked = true;
+                Log.w("loaded checked app ",String.valueOf(i.loadLabel(pm)));
             }
-            result.add(new Aplicacion(i.uid,String.valueOf(i.loadLabel(pm)),i.loadIcon(pm),checked,true));
+
+            boolean found = false;
+            for (Aplicacion j : result){
+                if (j.getUid() == i.uid){
+                    j.setLabel(j.getLabel()+","+String.valueOf(i.loadLabel(pm)));
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                result.add(new Aplicacion(i.uid, String.valueOf(i.loadLabel(pm)), i.loadIcon(pm), checked, true));
+            }
 
         }
 
@@ -154,11 +164,12 @@ public class Aplicaciones extends ActionBarActivity implements AdapterView.OnIte
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.save) {
+
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File(sdcard, "apps_shield.txt");
             try {
                 FileOutputStream fo = new FileOutputStream(file);
-                for (Aplicacion c : aplicaciones) {
+                for (Aplicacion c : appsAdapter.getOrig()) {
                     if (c.isChecked()) {
                         fo.write((String.valueOf(c.getUid()) + "\n").getBytes());
                         Log.i("checked", (String.valueOf(c.getUid())));
@@ -190,7 +201,7 @@ public class Aplicaciones extends ActionBarActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         aplicaciones.get(position).setChecked(!aplicaciones.get(position).isChecked());
         String text = aplicaciones.get(position).getLabel()+" set to "+String.valueOf(aplicaciones.get(position).isChecked());
-        Toast.makeText(this,text,Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this,text,Toast.LENGTH_SHORT).show();
         appsAdapter.notifyDataSetChanged();
     }
 }

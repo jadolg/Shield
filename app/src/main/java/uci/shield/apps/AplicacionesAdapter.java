@@ -129,6 +129,9 @@ public class AplicacionesAdapter extends ArrayAdapter<Aplicacion> {
         }
 
     }
+    public ArrayList<Aplicacion> getOrig(){
+        return original;
+    }
 
 
 }

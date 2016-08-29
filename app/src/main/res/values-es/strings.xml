@@ -13,9 +13,12 @@
     <string name="NNDNSOFF">Escudo de Nauta (sin DNS) Apagado</string>
     <string name="BON">Bloqueo de Datos Encendido</string>
     <string name="BOFF">Bloqueo de Datos Apagado</string>
-    <string name="edit_strings">Editar cadenas</string>
+    <string name="edit_strings">Editar cadenas de bloqueo de internet</string>
     <string name="title_activity_aplicaciones">Aplicaciones</string>
     <string name="nautaapps">Aplicaciones con acceso a nauta</string>
     <string name="saveS">Guardar</string>
+    <string name="about">Acerca de...</string>
+    <string name="title_activity_about">Acerca de...</string>
+    <string name="aboutText">The Blue Elephant\'s Shield es una aplicación orientada a bloquear las conexiones salientes de nuestro dispositivo hacia ciertas redes como la de NAUTA para el correo en los móbiles permitiendo así un menor consumo debido a la reducción de peticiones de nuestros dispositivos hacia la red. \n\nAutor: Jorge Alberto Díaz Orozco (Akiel)\ne-mail: diazorozcoj@gmail.com\n\nAgradecimientos:\na Ale, Ed.OS, PP y el resto de los elefantes azules.\n\nCódigo disponible en: https://github.com/jadolg/Shield.git</string>
 
 </resources>

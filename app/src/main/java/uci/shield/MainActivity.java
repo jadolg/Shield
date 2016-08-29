@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -32,6 +33,7 @@ public class MainActivity extends ActionBarActivity {
     ToggleButton button2;
     ToggleButton button3;
     ToggleButton button4;
+    TextView texto;
     private String default_addrs = "addons.mozilla.\n" +
             "fbstatic\n" +
             "cdn.\n" +
@@ -49,6 +51,21 @@ public class MainActivity extends ActionBarActivity {
         button2 = (ToggleButton) findViewById(R.id.toggleButton2);
         button3 = (ToggleButton) findViewById(R.id.toggleButton3);
         button4 = (ToggleButton) findViewById(R.id.toggleButton4);
+        texto = (TextView)findViewById(R.id.textView);
+
+        String status = "";
+
+        if (suexec("ls").equals("error")){
+            status = "Error";
+            disableButtons();
+        } else {
+            status = "OK";
+            enableButtons();
+        }
+
+        String txt = "Root: "+status+"\nNAUTA:\nPOP3: 181.225.231.13:110 STARTTLS\nIMAP: 181.225.231.14:143 STARTTLS\nSMTP: 181.225.231.12:25 STARTTLS\n\nDNS 1:190.6.81.244\nDNS 2:190.6.81.237";
+        texto.setText(txt);
+
         createFile();
         readFile();
 
@@ -63,6 +80,16 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         readFile();
         confButtons();
+        String status = "";
+        if (suexec("ls").equals("error")){
+            disableButtons();
+            status = "Error";
+        } else {
+            enableButtons();
+            status = "OK";
+        }
+        String txt = "Root: "+status+"\nNAUTA:\nPOP3: (pop.nauta.cu)181.225.231.13:110 STARTTLS\nIMAP: (imap.nauta.cu)181.225.231.14:143 STARTTLS\nSMTP: (smtp.nauta.cu)181.225.231.12:25 STARTTLS\n\nDNS 1:190.6.81.244\nDNS 2:190.6.81.237";
+        texto.setText(txt);
     }
 
     private ArrayList<String> getDomainS(){
@@ -113,6 +140,21 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(getApplicationContext(), getString(R.string.error_reading_file),
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    private void disableButtons(){
+        button.setEnabled(false);
+        button2.setEnabled(false);
+        button3.setEnabled(false);
+        button4.setEnabled(false);
+    }
+
+    private void enableButtons(){
+        button.setEnabled(true);
+        button2.setEnabled(true);
+        button3.setEnabled(true);
+        button4.setEnabled(true);
     }
 
     private void confButtons(){
@@ -213,9 +255,12 @@ public class MainActivity extends ActionBarActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
             return true;
-        } if (id == R.id.nautaapps){
+        } else if (id == R.id.nautaapps){
             Intent myIntent = new Intent(MainActivity.this, Aplicaciones.class);
             startActivityForResult(myIntent, 239);
+        } else if (id == R.id.about){
+            Intent myIntent = new Intent(MainActivity.this, AboutActivity.class);
+            startActivity(myIntent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -330,17 +375,15 @@ public class MainActivity extends ActionBarActivity {
     private void nautaProt(){
         loadCheckedApps();
         ArrayList<String> a = new ArrayList<>();
-//        a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
         a.add("iptables -N NAUTA");
         for (String app : checkedApps) {
-//            String tapp = app.substring(0, app.indexOf(":"));
-//            Log.e("ch", app.substring(0, app.indexOf(":")));
 
-            for (String dnsServer : getDomainS()) {
-                a.add("iptables -A NAUTA -o rmnet0 -d "+dnsServer+" -p tcp -m tcp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
-                a.add("iptables -A NAUTA -o rmnet0 -d "+dnsServer+" -p udp -m udp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
-            }
+//            getDomainS();
 
+            a.add("iptables -A NAUTA -o rmnet0 -d 190.6.81.244 -p tcp -m tcp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 190.6.81.244 -p udp -m udp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 190.6.81.237 -p tcp -m tcp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
+            a.add("iptables -A NAUTA -o rmnet0 -d 190.6.81.237 -p udp -m udp --dport 53 -m owner --uid-owner "+app+" -j ACCEPT");
             a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 25 -m owner --uid-owner "+app+" -j ACCEPT");
             a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 110 -m owner --uid-owner "+app+" -j ACCEPT");
             a.add("iptables -A NAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 143 -m owner --uid-owner "+app+" -j ACCEPT");
@@ -366,11 +409,8 @@ public class MainActivity extends ActionBarActivity {
     private void nautaProtNDNS(){
         loadCheckedApps();
         ArrayList<String> a = new ArrayList<>();
-//        a.add("iptables -A OUTPUT -o rmnet0 -j REJECT");
         a.add("iptables -N NDNSNAUTA");
         for (String app : checkedApps) {
-//            String tapp = app.substring(0, app.indexOf(":"));
-//            Log.e("ch", app.substring(0, app.indexOf(":")));
 
             a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 25 -m owner --uid-owner "+app+" -j ACCEPT");
             a.add("iptables -A NDNSNAUTA -o rmnet0 -d 181.225.231.0/24 -p tcp --dport 110 -m owner --uid-owner "+app+" -j ACCEPT");
@@ -432,7 +472,6 @@ public class MainActivity extends ActionBarActivity {
         }
         sudo(a);
         confButtons();
-//        Log.w("iptables -nL", suexec("iptables -nL"));
 
     }
 

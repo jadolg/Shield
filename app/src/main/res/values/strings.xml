@@ -14,9 +14,12 @@
     <string name="NNDNSOFF">Nauta Shield (no DNS) OFF</string>
     <string name="BON">Blocking Data Connection ON</string>
     <string name="BOFF">Blocking Data Connection OFF</string>
-    <string name="edit_strings">Edit strings</string>
+    <string name="edit_strings">Edit internet blocking strings</string>
     <string name="title_activity_aplicaciones">Applications</string>
     <string name="nautaapps">Nauta allowed Apps</string>
     <string name="saveS">Save</string>
+    <string name="about">About...</string>
+    <string name="title_activity_about">About</string>
+    <string name="aboutText">The Blue Elephant\'s Shield blocks otgoing connections of our devices to some networks like NAUTA\'s (used in mailing for phones) resulting in less consumption because of the reduction of requests of our devices to the network. \n\nAuthor: Jorge Alberto Díaz Orozco (Akiel)\ne-mail: diazorozcoj@gmail.com\n\nAgreements:\nto Ale, Ed.OS, PP and all the other Blue Elephants.\n\nSource Code Available on: https://github.com/jadolg/Shield.git</string>
 
 </resources>

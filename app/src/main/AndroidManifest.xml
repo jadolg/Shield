@@ -23,10 +23,15 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>z
+        </activity>
+z
         <activity
             android:name="uci.shield.Aplicaciones"
             android:label="@string/title_activity_aplicaciones" >
+        </activity>
+        <activity
+            android:name="uci.shield.AboutActivity"
+            android:label="@string/title_activity_about" >
         </activity>
     </application>
 
